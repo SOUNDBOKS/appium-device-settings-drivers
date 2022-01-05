@@ -22,8 +22,8 @@ let phoneDriver: PhoneDriver;
 const automationName = {
     'Android': 'UiAutomator2',
     'iOS': 'XCuiTest'
-  };
-  
+};
+
 
 export const mochaHooks = {
     async beforeAll() {
@@ -33,20 +33,20 @@ export const mochaHooks = {
         client = await WebdriverIO.remote({
             logLevel: "warn",
             path: "/",
-            port: 8100,
+            port: 7200,
             capabilities: {
                 platformName,
+                "appium:wdaLocalPort": 8000,
+                "appium:systemPort": 8000,
                 "appium:automationName": automationName[platformName],
                 "appium:deviceName": pod.deviceName,
                 "appium:platformVersion": pod.platformVersion,
                 "appium:udid": pod.udid,
-                "appium:options": {
-                    autoAcceptAlerts: false,
-                    autoGrantPermissions: false,
-                    language: "en",
-                    locale: "US",
-                    locationServicesEnabled: true,
-                }
+                "appium:autoAcceptAlerts": false,
+                "appium:autoGrantPermissions": false,
+                "appium:language": "en",
+                "appium:locale": "US",
+                "appium:locationServicesEnabled": true,
             }
         } as any)
 

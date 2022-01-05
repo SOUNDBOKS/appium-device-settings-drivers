@@ -481,10 +481,10 @@
   resolved "https://registry.yarnpkg.com/@sindresorhus/is/-/is-4.2.0.tgz#667bfc6186ae7c9e0b45a08960c551437176e1ca"
   integrity sha512-VkE3KLBmJwcCaVARtQpfuKcKv8gcBmUubrfHGF84dXuuW6jgsRYxPtzcIhPyK9WAPpRt2/xY6zkD9MnRaJzSyw==
 
-"@soundboks/again@^0.1.1":
-  version "0.1.1"
-  resolved "https://registry.yarnpkg.com/@soundboks/again/-/again-0.1.1.tgz#d5d9aa320233cc9c952db9d65710f9e811825a71"
-  integrity sha512-ypNIrQOhdu/vpyAO9DJNLU3bXBO+YhiIUnLRLFS+DKjVdZDcJDIn4PXsXBGziEB91b9abciSpxPl9Rrvbs3atg==
+"@soundboks/again@^0.1.2":
+  version "0.1.2"
+  resolved "https://registry.yarnpkg.com/@soundboks/again/-/again-0.1.2.tgz#504b5010b1efb2b0588ffe5d013d2b91f98e1394"
+  integrity sha512-vPlQLAOsT9TU4MpAIiyfTjMwKBfTR8qcre+L7lQj1B7ZaFKcOkJO1PZ9YaXJc1DzK4vxxeAiD7iyn/G5nSAtyg==
 
 "@soundboks/async-local-context@0.1.0":
   version "0.1.0"

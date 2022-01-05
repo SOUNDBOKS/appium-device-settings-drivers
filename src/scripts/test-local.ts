@@ -12,6 +12,7 @@ import { promisify } from "util"
 const mkdir = promisify(fs.mkdir)
 
 program.addOption(new Option("--udid <udid>").makeOptionMandatory())
+program.addOption(new Option("--deviceName <deviceName>"))
 program.addOption(new Option("--brand <brand>").choices(Object.keys(Brand)).makeOptionMandatory())
 program.addOption(new Option("--osVersion <version>").makeOptionMandatory())
 program.addOption(new Option("--testDevice <device>").makeOptionMandatory())
@@ -27,12 +28,13 @@ const main = async () => {
         udid: options.udid,
         brand: options.brand,
         osVersion: options.osVersion,
-        testDevice: options.testDevice
+        testDevice: options.testDevice,
+        deviceName: options.deviceName,
     }, undefined, 2))
     
     let appium: Appium.AppiumProcess
     try {
-        appium = Appium.startServer("output/appium.log", 8100)
+        appium = Appium.startServer("output/appium.log", 7200)
         Logger.log("Appium Server started")
 
         await new Promise(resolve => setTimeout(resolve, 3000))

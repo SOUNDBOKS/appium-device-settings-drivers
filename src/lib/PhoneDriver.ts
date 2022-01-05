@@ -16,7 +16,7 @@ type SelectorStrategy = 'accessibility id' | 'xpath' | 'class name' | 'id';
 
 type ElementId = string; // Note: element ids are not persistent, being valid only until unmounted
 
-export function isStaleElementExcepton(e: Error): boolean {
+export function isStaleElementException(e: Error): boolean {
     return (e as Error).name === "stale element reference"
 }
 
@@ -27,7 +27,7 @@ Other errors will still bubble up normally
 export function retryIfStaleElementException(target: any, name: string, descriptor: PropertyDescriptor) {
     const inner = descriptor.value
     descriptor.value = function (...args: any[]) {
-        return retryIf(() => inner.apply(this, args), isStaleElementExcepton)
+        return retryIf(() => inner.apply(this, args), isStaleElementException)
     }
 }
 
@@ -66,8 +66,8 @@ export class PhoneDriver {
     async printScreen(namePrefix = 'print') {
         fs.mkdirSync('output/screen', { recursive: true })
 
-        const screenshot = await retryIf(() => this.client.takeScreenshot(), isStaleElementExcepton)
-        const pageSource = await retryIf(() => this.client.getPageSource(), isStaleElementExcepton);
+        const screenshot = await retryIf(() => this.client.takeScreenshot(), isStaleElementException)
+        const pageSource = await retryIf(() => this.client.getPageSource(), isStaleElementException);
 
         fs.writeFileSync(`output/screen/${namePrefix}.png`, Buffer.from(screenshot, 'base64'));
         fs.writeFileSync(`output/screen/${namePrefix}.xml`, pageSource);
@@ -659,6 +659,18 @@ export class PhoneDriver {
         const fromPoint = { x, y: 0.75 * height };
         const toPoint = { x, y: 0.25 * height };
         await this.dragPosition(fromPoint, toPoint); // Note: scroll half the screen size
+        // TODO: why does this not work?
+        // const xoffset = 0;
+        // const yoffset = height / 2; // Note: scroll half the screen size
+        // await this.client.touchScroll(xoffset, yoffset);
+    }
+
+    async scrollUp() {
+        const { height, width } = await this.client.getWindowSize();
+        const x = width / 2;
+        const fromPoint = { x, y: 0.75 * height };
+        const toPoint = { x, y: 0.25 * height };
+        await this.dragPosition(toPoint, fromPoint); // Note: scroll half the screen size
         // TODO: why does this not work?
         // const xoffset = 0;
         // const yoffset = height / 2; // Note: scroll half the screen size

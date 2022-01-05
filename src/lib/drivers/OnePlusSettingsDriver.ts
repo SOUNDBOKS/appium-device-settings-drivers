@@ -1,7 +1,8 @@
-import { PhoneDriver, retryIfStaleElementException } from "../PhoneDriver";
+import { retryIf } from "@soundboks/again";
+import { isStaleElementException, PhoneDriver, retryIfStaleElementException } from "../PhoneDriver";
 import { ISettingsDriver, PairDeviceOptions, PairingFailure, Permission, WebdriverBrowser } from "../types";
 
-export default class LGSettingsDriver extends PhoneDriver implements ISettingsDriver {
+export default class OnePlusSettingsDriver extends PhoneDriver implements ISettingsDriver {
     client: WebdriverBrowser
 
     constructor(client: WebdriverBrowser) {
@@ -17,8 +18,9 @@ export default class LGSettingsDriver extends PhoneDriver implements ISettingsDr
     }
     
     async disconnectDevice(deviceLabel: string): Promise<void> {
-        await this.click((await this.findByIncludesText(deviceLabel))!)
+        await this.click((await this.findDeviceDetailsButton(deviceLabel))!)
         await this.clickByText("Disconnect")
+        await this.click((await this.findElement("xpath", "//*[@content-desc='Navigate up']"))!)
     }
 
     @retryIfStaleElementException
@@ -27,23 +29,23 @@ export default class LGSettingsDriver extends PhoneDriver implements ISettingsDr
     }
 
     async pairDevice(deviceLabel: string, options?: PairDeviceOptions): Promise<void> {
-        await this.click((await this.findByIncludesText(deviceLabel))!)
-        await this.setImplicitTimeout(15000)
+        await this.clickByText("Pair new device")
+        
+        await retryIf(async () => this.click((await this.findByIncludesText(deviceLabel))!), isStaleElementException)
 
         await this.withPatience(15000, async () => {
-            if(await this.findByText("e.g. 0000 or 1234")) {
+            if(await this.findByText("Usually 0000 or 1234")) {
                 const [pinInput] = await this.findInputs()
                 if (!(options?.pincode)) throw new Error("Device expects a pincode, but none was given")
                 await this.type(pinInput, options.pincode)
-                await this.clickByText("Pair")
+                await this.clickByText("OK")
             } else {
                 if (options?.expectPincode) throw new Error("Expected to be asked for a pincode")
                 await this.clickByText("Pair")
             }
         })
 
-        if (await this.findByIncludesText("Cannot pair")) {
-            await this.clickByText("OK")
+        if (await this.findByIncludesText("incorrect PIN")) {
             throw new PairingFailure(deviceLabel)
         }
         if (!(await this.findDeviceDetailsButton(deviceLabel))) {
@@ -52,23 +54,25 @@ export default class LGSettingsDriver extends PhoneDriver implements ISettingsDr
     }
 
     async isDeviceConnected(deviceLabel: string): Promise<boolean> {
-        return !!(await this.findElement('xpath', `//*[contains(@text,"${deviceLabel}")]/..//*[@text="Connected to media audio"]`))
+        return !!(await this.findElement('xpath', `//*[contains(@text,"${deviceLabel}")]/..//*[@text="Active"]`))
     }
 
     async findDeviceDetailsButton(label: string) {
-        return this.findElement('xpath', `//*[contains(@text,"${label}")]/../..//*[@content-desc="Device Settings"]`);
+        return this.findElement('xpath', `//*[contains(@text,"${label}")]/../../..//*[@content-desc="Settings"]`);
     }
 
     async ensureDeviceUnpaired(deviceLabel: string): Promise<void> {
         const deviceDetailsButton = await this.findDeviceDetailsButton(deviceLabel)
         if (deviceDetailsButton) {
             await this.click(deviceDetailsButton)
-            await this.clickByText("Unpair")
+            await this.clickByText("Forget")
+            await this.clickByText("Forget device")
         }
     }
 
     async navigateBluetooth(): Promise<void> {
-        await this.clickByText("Connected devices")
+        await this.scrollUp();
+        await this.clickByText("Bluetooth & Device Connection")
         await this.clickByText("Bluetooth")
     }
 
@@ -78,18 +82,21 @@ export default class LGSettingsDriver extends PhoneDriver implements ISettingsDr
 
     @retryIfStaleElementException
     async ensureBluetoothEnabled(): Promise<void> {
-        const bluetoothIsOffSwitch = await this.findElement(
+        const bluetoothIsOffText = (await this.findElement(
             'xpath',
-            "//android.widget.Switch[@text='Off']"
-        );
+            "//android.widget.Switch/../../*[@text='Off']"
+        ))
 
-        if (bluetoothIsOffSwitch) {
-            await this.click(bluetoothIsOffSwitch)
+        if (bluetoothIsOffText) {
+            await this.click((await this.findElement(
+                "xpath",
+                "//android.widget.Switch"
+            ))!)
         }
 
         if (!(await this.findElement(
             'xpath',
-            "//android.widget.Switch[@text='ON']"
+            "//android.widget.Switch/../../*[@text='On']"
         ))) {
             throw new Error("Failed to assert that bluetooth is enabled")
         }
@@ -102,18 +109,21 @@ export default class LGSettingsDriver extends PhoneDriver implements ISettingsDr
 
     @retryIfStaleElementException
     async ensureBluetoothDisabled(): Promise<void> {
-        let bluetoothIsOnSwitch = await this.findElement(
+        let bluetoothIsOnText = await this.findElement(
             'xpath',
-            "//android.widget.Switch[@text='ON']"
+            "//android.widget.Switch/../../*[@text='On']"
         );
 
-        if (bluetoothIsOnSwitch) {
-            await this.click(bluetoothIsOnSwitch)
+        if (bluetoothIsOnText) {
+            await this.click((await this.findElement(
+                "xpath",
+                "//android.widget.Switch"
+            ))!)
         }
 
         if (!(await this.findElement(
             'xpath',
-            "//android.widget.Switch[@text='Off']"
+            "//android.widget.Switch/../../*[@text='Off']"
         ))) {
             throw new Error("Failed to assert that bluetooth is disabled")
         }

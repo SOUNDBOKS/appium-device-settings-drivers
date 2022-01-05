@@ -1,40 +1,147 @@
-import { ISettingsDriver, PairDeviceOptions, Permission } from "../types";
+import { retryIf, retryUntilWithIntermediateStep } from "@soundboks/again";
+import { isStaleElementException, PhoneDriver, retryIfStaleElementException } from "../PhoneDriver";
+import { ISettingsDriver, PairDeviceOptions, Permission, WebdriverBrowser } from "../types";
 
 
+/**
+ * iOS Preference Driver
+ * 
+ * 
+ * 
+ * @note The excessive amount of short waits is mostly to deal with old iOS devices
+ *       Without them, quite often a click will happen, but have no effect and fail silently.
+ */
 
-export default class iOSSettingsDriver implements ISettingsDriver {
-    allowPermission(permission: Permission): Promise<void> {
-        throw new Error("Method not implemented.");
+
+export default class iOSSettingsDriver extends PhoneDriver implements ISettingsDriver {
+    client: WebdriverBrowser
+
+    constructor(client: WebdriverBrowser) {
+        super(client, "iOS")
+        this.client = client
     }
-    disconnectDevice(deviceLabel: string): Promise<void> {
-        throw new Error("Method not implemented.");
+
+
+    async allowPermission(permission: Permission): Promise<void> {
+        switch(permission) {
+            case Permission.Bluetooth:
+                await this.clickByA11y("OK")
+                break;
+            case Permission.Notifications:
+                await this.clickByA11y("Allow")
+                break;
+            default:
+                throw new Error("Unknown permission request: " + permission)
+        }
     }
-    connectDevice(deviceLabel: string): Promise<void> {
-        throw new Error("Method not implemented.");
+
+    async disconnectDevice(deviceLabel: string): Promise<void> {
+        await retryIf(async () => await this.click((await this.findDeviceDetailsButton(deviceLabel))!), isStaleElementException)
+        await new Promise(resolve => setTimeout(resolve, 500))
+        await this.clickByA11y("Disconnect")
+        await new Promise(resolve => setTimeout(resolve, 500))
+        await this.clickByA11y("Bluetooth")
     }
-    pairDevice(deviceLabel: string, options: PairDeviceOptions): Promise<void> {
-        throw new Error("Method not implemented.");
+
+    @retryIfStaleElementException
+    async connectDevice(deviceLabel: string): Promise<void> {
+        await this.click((await this.findByIncludesText(deviceLabel))!)
     }
-    isDeviceConnected(deviceLabel: string): Promise<boolean> {
-        throw new Error("Method not implemented.");
+
+    async pairDevice(deviceLabel: string, options: PairDeviceOptions): Promise<void> {
+        await retryIf(async () => this.click((await this.findByIncludesText(deviceLabel))!), isStaleElementException)
+
+        if (!await this.isDeviceConnected(deviceLabel)) {
+            throw new Error("Failed to assert that device is connected after pairing")
+        }
     }
-    activateSettings(): Promise<void> {
-        throw new Error("Method not implemented.");
+
+    async ensureDeviceUnpaired(deviceLabel: string): Promise<void> {
+        await this.withPatience(20000, async () => {
+            const deviceDetailsButton = await this.findDeviceDetailsButton(deviceLabel);
+
+            if (deviceDetailsButton) {
+                await retryIf(async () => this.click((await this.findDeviceDetailsButton(deviceLabel))!), isStaleElementException)
+                await new Promise(resolve => setTimeout(resolve, 500))
+                await this.clickByA11y('Forget This Device');
+                await new Promise(resolve => setTimeout(resolve, 500))
+                await this.clickByA11y('Forget Device'); // Note: setting autoAcceptAlerts to true will click "cancel" here instead
+                // Note: re-enter Bluetooth settings to ensure it becomes visible again
+                await new Promise(resolve => setTimeout(resolve, 500))
+                await this.clickByA11y('Settings');
+                await new Promise(resolve => setTimeout(resolve, 500))
+                await this.clickByA11y('Bluetooth');
+
+                // Note: wait until it becomes visible again for re-pairing
+                await retryUntilWithIntermediateStep(async () => Boolean(await this.findByIncludesText(deviceLabel)), async () => {
+                    await this.ensureBluetoothReenabled()
+                });
+            }
+        })
     }
-    navigateBluetooth(): Promise<void> {
-        throw new Error("Method not implemented.");
+
+    async findDeviceDetailsButton(deviceLabel: string) {
+        return this.findElement("xpath", `//*[contains(@label, '${deviceLabel}')]/*[@label='More Info']`)
     }
-    ensureBluetoothEnabled(): Promise<void> {
-        throw new Error("Method not implemented.");
+
+    async isDeviceConnected(deviceLabel: string): Promise<boolean> {
+        const getBluetoothConnectionText = async () => {
+            return this.textOfElement("xpath", `//XCUIElementTypeStaticText[contains(@value, "${deviceLabel}")]/following-sibling::XCUIElementTypeStaticText`)
+        }
+
+        return await getBluetoothConnectionText() === "Connected"
     }
-    ensureBluetoothReenabled(): Promise<void> {
-        throw new Error("Method not implemented.");
+
+    async activateSettings(): Promise<void> {
+        await this.client.activateApp("com.apple.Preferences")
     }
-    ensureBluetoothDisabled(): Promise<void> {
-        throw new Error("Method not implemented.");
+
+    async navigateBluetooth(): Promise<void> {
+        await this.clickByA11y("Bluetooth")
     }
-    ensureDeviceUnpaired(): Promise<void> {
-        throw new Error("Method not implemented.");
+
+    async ensureBluetoothReenabled(): Promise<void> {
+        await this.ensureBluetoothDisabled()
+        await this.ensureBluetoothEnabled()
+    }
+
+    async ensureBluetoothEnabled(): Promise<void> {
+        const bluetoothIsOffSwitch = await this.findElement(
+            'xpath',
+            "//XCUIElementTypeSwitch[@name='Bluetooth' and @value='0']"
+        );
+
+        if (bluetoothIsOffSwitch) {
+            await this.click(bluetoothIsOffSwitch);
+        }
+
+        if (!(await this.findElement(
+            'xpath',
+            "//XCUIElementTypeSwitch[@name='Bluetooth' and @value='1']"
+        ))) {
+
+            throw new Error("Failed to assert that bluetooth is enabled")
+        }
+    }
+
+
+    async ensureBluetoothDisabled(): Promise<void> {
+        const bluetoothIsOnSwitch = await this.findElement(
+            'xpath',
+            "//XCUIElementTypeSwitch[@name='Bluetooth' and @value='1']"
+        );
+
+        if (bluetoothIsOnSwitch) {
+            await this.click(bluetoothIsOnSwitch);
+        }
+
+        if (!(await this.findElement(
+            'xpath',
+            "//XCUIElementTypeSwitch[@name='Bluetooth' and @value='0']"
+        ))) {
+
+            throw new Error("Failed to assert that bluetooth is disabled")
+        }
     }
 
 }
