@@ -23,7 +23,9 @@
   },
   "dependencies": {
     "@soundboks/again": "^0.1.2",
-    "@soundboks/async-logger": "^0.1.5"
+    "@soundboks/async-logger": "^0.1.5",
+    "@types/semver": "^7.3.9",
+    "semver": "^7.3.5"
   },
   "scripts": {
     "test-local": "yarn ts-node src/scripts/test-local",

@@ -2,19 +2,24 @@ import { ISettingsDriver, WebdriverBrowser } from ".."
 import { isStaleElementException, PhoneDriver, retryIfStaleElementException } from "../PhoneDriver"
 import { PairDeviceOptions, PairingFailure, Permission } from "../types"
 import { retryIf, retryUntil, retryWithIntermediateStep } from "@soundboks/again"
+import { coerce, SemVer } from "semver"
 
 /**
  * Huawei Settings Driver
  * 
  * Tested for:
  *  Huawei P10 Android Version 9
+ *  Huawei P30 Android Version 10
+ *  Huawei P40 Android Version 10
  */
 export default class HuaweiSettingsDriver extends PhoneDriver implements ISettingsDriver {
     client: WebdriverBrowser
+    platformVersion: SemVer
 
-    constructor(client: WebdriverBrowser) {
+    constructor(client: WebdriverBrowser, platformVersion: string) {
         super(client, "Android")
         this.client = client
+        this.platformVersion = coerce(platformVersion) || (() => { throw new Error("Passed platform version could not be coerced into a semver") })()
     }
 
     async allowPermission(permission: Permission): Promise<void> {
@@ -26,7 +31,7 @@ export default class HuaweiSettingsDriver extends PhoneDriver implements ISettin
 
     async disconnectDevice(deviceLabel: string): Promise<void> {
         await this.click((await this.findByIncludesText(deviceLabel))!)
-        await this.clickByText("OK")
+        await retryIf(async () => this.click((await this.findElement("xpath", "//android.widget.Button[@index='1']"))!), isStaleElementException)
     }
 
     @retryIfStaleElementException
@@ -63,11 +68,12 @@ export default class HuaweiSettingsDriver extends PhoneDriver implements ISettin
                 await this.clickByText("OK")
             } else {
                 if (options?.expectPincode) throw new Error("Expected to be asked for a pincode")
+                await this.clickByText("PAIR")
             }
         })
 
         await this.withPatience(10000, async () => {
-            if (await Promise.race([this.findByIncludesText("Couldn't pair"), this.findByIncludesText("An error occured during pairing")])) {
+            if (await Promise.race([this.findByIncludesText("pairing mode"), this.findByIncludesText("An error occured during pairing")])) {
                 await this.clickByText("OK").catch(_ => { }) // If it was a random failure, there won't be a popup
                 throw new PairingFailure(deviceLabel)
             }
@@ -97,7 +103,10 @@ export default class HuaweiSettingsDriver extends PhoneDriver implements ISettin
     }
 
     async navigateBluetooth(): Promise<void> {
-        await this.clickByText("Device connectivity")
+        if (this.platformVersion.major <= 9) {
+            await this.clickByText("Device connectivity")
+        }
+
         await this.clickByText("Bluetooth")
     }
 
@@ -109,7 +118,7 @@ export default class HuaweiSettingsDriver extends PhoneDriver implements ISettin
     async ensureBluetoothEnabled(): Promise<void> {
         const bluetoothIsOffSwitch = await this.findElement(
             'xpath',
-            "//android.widget.Switch[@checked='false']"
+            "//*[@checked='false' and @resource-id='com.android.settings:id/switch_widget']"
         );
 
         if (bluetoothIsOffSwitch) {
@@ -118,7 +127,7 @@ export default class HuaweiSettingsDriver extends PhoneDriver implements ISettin
 
         if (!(await this.findElement(
             'xpath',
-            "//android.widget.Switch[@checked='true']"
+            "//*[@checked='true' and @resource-id='com.android.settings:id/switch_widget']"
         ))) {
             throw new Error("Failed to assert that bluetooth is enabled")
         }
@@ -137,7 +146,7 @@ export default class HuaweiSettingsDriver extends PhoneDriver implements ISettin
     async ensureBluetoothDisabled(): Promise<void> {
         let bluetoothIsOnSwitch = await this.findElement(
             'xpath',
-            "//android.widget.Switch[@checked='true']"
+            "//*[@checked='true' and @resource-id='com.android.settings:id/switch_widget']"
         );
 
         if (bluetoothIsOnSwitch) {
@@ -146,7 +155,7 @@ export default class HuaweiSettingsDriver extends PhoneDriver implements ISettin
 
         if (!(await this.findElement(
             'xpath',
-            "//android.widget.Switch[@checked='false']"
+            "//*[@checked='false' and @resource-id='com.android.settings:id/switch_widget']"
         ))) {
             throw new Error("Failed to assert that bluetooth is disabled")
         }

@@ -22,7 +22,7 @@ export function createSettingsDriver(
         case Brand.OnePlus:
             return new OnePlusSettingsDriver(client)
         case Brand.Huawei:
-            return new HuaweiSettingsDriver(client)
+            return new HuaweiSettingsDriver(client, platformVersion)
         case Brand.Samsung:
             return new SamsungSettingsDriver(client)
         case Brand.Google:

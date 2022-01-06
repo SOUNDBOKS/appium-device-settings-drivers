@@ -27,7 +27,7 @@ const main = async () => {
     fs.writeFileSync("output/pod.json", JSON.stringify({
         udid: options.udid,
         brand: options.brand,
-        osVersion: options.osVersion,
+        platformVersion: options.osVersion,
         testDevice: options.testDevice,
         deviceName: options.deviceName,
     }, undefined, 2))
