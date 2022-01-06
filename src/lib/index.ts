@@ -1,4 +1,5 @@
 
+import { coerce } from "semver"
 import HuaweiSettingsDriver from "./drivers/HuaweiSettingsDriver"
 import iOSSettingsDriver from "./drivers/iOSSettingsDriver"
 import LGSettingsDriver from "./drivers/LGSettingsDriver"
@@ -14,6 +15,8 @@ export function createSettingsDriver(
     brand: Brand,
     platformVersion: string,
 ): ISettingsDriver {
+    const semver = coerce(platformVersion) || (() => { throw new Error("Passed platform version could not be coerced into a semver") })()
+
     switch(brand) {
         case Brand.iPhone:
             return new iOSSettingsDriver(client)
@@ -22,9 +25,9 @@ export function createSettingsDriver(
         case Brand.OnePlus:
             return new OnePlusSettingsDriver(client)
         case Brand.Huawei:
-            return new HuaweiSettingsDriver(client, platformVersion)
+            return new HuaweiSettingsDriver(client, semver)
         case Brand.Samsung:
-            return new SamsungSettingsDriver(client)
+            return new SamsungSettingsDriver(client, semver)
         case Brand.Google:
             return new StockAndroidSettingsDriver(client)
         default:

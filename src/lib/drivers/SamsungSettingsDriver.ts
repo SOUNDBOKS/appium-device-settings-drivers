@@ -1,4 +1,5 @@
 import { retryIf, retryUntil } from "@soundboks/again";
+import { SemVer } from "semver";
 import { isStaleElementException, PhoneDriver, retryIfStaleElementException } from "../PhoneDriver";
 import { ISettingsDriver, PairDeviceOptions, PairingFailure, Permission, WebdriverBrowser } from "../types";
 
@@ -7,14 +8,17 @@ import { ISettingsDriver, PairDeviceOptions, PairingFailure, Permission, Webdriv
  * 
  * Tested for:
  *  Samsung S21 Android Version 11
+ *  Samsung S9 Android Version 10
  */
 
 export default class SamsungSettingsDriver extends PhoneDriver implements ISettingsDriver {
     client: WebdriverBrowser
+    platformVersion: SemVer
 
-    constructor(client: WebdriverBrowser) {
+    constructor(client: WebdriverBrowser, platformVersion: SemVer) {
         super(client, "Android")
         this.client = client
+        this.platformVersion = platformVersion
     }
 
     async allowPermission(permission: Permission): Promise<void> {
@@ -25,9 +29,13 @@ export default class SamsungSettingsDriver extends PhoneDriver implements ISetti
     }
 
     async disconnectDevice(deviceLabel: string): Promise<void> {
-        await this.click((await this.findDeviceDetailsButton(deviceLabel))!)
-        await this.clickByText("Disconnect")
-        await this.click((await this.findElement("xpath", "//*[@content-desc='Navigate up']"))!)
+        if (this.platformVersion.major >= 11) {
+            await this.click((await this.findDeviceDetailsButton(deviceLabel))!)
+            await this.clickByText("Disconnect")
+            await this.click((await this.findElement("xpath", "//*[@content-desc='Navigate up']"))!)
+        } else {
+            await this.click((await this.findByIncludesText(deviceLabel))!)
+        }
     }
 
     @retryIfStaleElementException
@@ -46,7 +54,12 @@ export default class SamsungSettingsDriver extends PhoneDriver implements ISetti
                 await this.clickByText("OK")
             } else {
                 if (options?.expectPincode) throw new Error("Expected to be asked for a pincode")
-                await this.clickByText("Pair")
+
+                if (this.platformVersion.major >= 11) {
+                    await this.clickByText("Pair")
+                } else {
+                    await this.clickByText("OK")
+                }
             }
         })
 

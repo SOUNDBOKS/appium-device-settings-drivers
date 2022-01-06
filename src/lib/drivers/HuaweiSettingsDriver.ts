@@ -16,10 +16,10 @@ export default class HuaweiSettingsDriver extends PhoneDriver implements ISettin
     client: WebdriverBrowser
     platformVersion: SemVer
 
-    constructor(client: WebdriverBrowser, platformVersion: string) {
+    constructor(client: WebdriverBrowser, platformVersion: SemVer) {
         super(client, "Android")
         this.client = client
-        this.platformVersion = coerce(platformVersion) || (() => { throw new Error("Passed platform version could not be coerced into a semver") })()
+        this.platformVersion = platformVersion
     }
 
     async allowPermission(permission: Permission): Promise<void> {
