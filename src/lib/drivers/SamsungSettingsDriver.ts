@@ -1,15 +1,15 @@
-import { retryIf } from "@soundboks/again";
+import { retryIf, retryUntil } from "@soundboks/again";
 import { isStaleElementException, PhoneDriver, retryIfStaleElementException } from "../PhoneDriver";
 import { ISettingsDriver, PairDeviceOptions, PairingFailure, Permission, WebdriverBrowser } from "../types";
 
 /**
- * OnePlus Settings Driver
+ * Samsung Settings Driver
  * 
  * Tested for:
- *  OnePlus 8T Android Version 11
+ *  Samsung S21 Android Version 11
  */
 
-export default class OnePlusSettingsDriver extends PhoneDriver implements ISettingsDriver {
+export default class SamsungSettingsDriver extends PhoneDriver implements ISettingsDriver {
     client: WebdriverBrowser
 
     constructor(client: WebdriverBrowser) {
@@ -18,12 +18,12 @@ export default class OnePlusSettingsDriver extends PhoneDriver implements ISetti
     }
 
     async allowPermission(permission: Permission): Promise<void> {
-        switch(permission) {
+        switch (permission) {
             default:
                 await this.click((await this.findElement("id", "com.android.permissioncontroller:id/permission_allow_foreground_only_button"))!)
         }
     }
-    
+
     async disconnectDevice(deviceLabel: string): Promise<void> {
         await this.click((await this.findDeviceDetailsButton(deviceLabel))!)
         await this.clickByText("Disconnect")
@@ -36,12 +36,10 @@ export default class OnePlusSettingsDriver extends PhoneDriver implements ISetti
     }
 
     async pairDevice(deviceLabel: string, options?: PairDeviceOptions): Promise<void> {
-        await this.clickByText("Pair new device")
-        
         await retryIf(async () => this.click((await this.findByIncludesText(deviceLabel))!), isStaleElementException)
 
         await this.withPatience(15000, async () => {
-            if(await this.findByText("Usually 0000 or 1234")) {
+            if (await this.findByText("Usually 0000 or 1234")) {
                 const [pinInput] = await this.findInputs()
                 if (!(options?.pincode)) throw new Error("Device expects a pincode, but none was given")
                 await this.type(pinInput, options.pincode)
@@ -61,49 +59,44 @@ export default class OnePlusSettingsDriver extends PhoneDriver implements ISetti
     }
 
     async isDeviceConnected(deviceLabel: string): Promise<boolean> {
-        return !!(await this.findElement('xpath', `//*[contains(@text,"${deviceLabel}")]/..//*[@text="Active"]`))
+        return !!(await this.findElement('xpath', `//*[contains(@text,"${deviceLabel}")]/..//*[@text="Connected for audio"]`))
     }
 
     async findDeviceDetailsButton(label: string) {
-        return this.findElement('xpath', `//*[contains(@text,"${label}")]/../../..//*[@content-desc="Settings"]`);
+        return this.findElement('xpath', `//*[contains(@text,"${label}")]/../../..//*[contains(@content-desc, "Device settings")]`);
     }
 
     async ensureDeviceUnpaired(deviceLabel: string): Promise<void> {
         const deviceDetailsButton = await this.findDeviceDetailsButton(deviceLabel)
         if (deviceDetailsButton) {
             await this.click(deviceDetailsButton)
-            await this.clickByText("Forget")
-            await this.clickByText("Forget device")
+            await this.clickByText("Unpair")
         }
     }
 
     async navigateBluetooth(): Promise<void> {
         await this.scrollUp();
-        await this.clickByText("Bluetooth & Device Connection")
+        await this.clickByText("Connections")
         await this.clickByText("Bluetooth")
     }
 
     async activateSettings(): Promise<void> {
         await this.client.activateApp("com.android.settings")
     }
-
     @retryIfStaleElementException
     async ensureBluetoothEnabled(): Promise<void> {
-        const bluetoothIsOffText = (await this.findElement(
+        const bluetoothIsOffSwitch = await this.findElement(
             'xpath',
-            "//android.widget.Switch/../../*[@text='Off']"
-        ))
+            "//android.widget.Switch[@checked='false']"
+        );
 
-        if (bluetoothIsOffText) {
-            await this.click((await this.findElement(
-                "xpath",
-                "//android.widget.Switch"
-            ))!)
+        if (bluetoothIsOffSwitch) {
+            await this.click(bluetoothIsOffSwitch)
         }
 
         if (!(await this.findElement(
             'xpath',
-            "//android.widget.Switch/../../*[@text='On']"
+            "//android.widget.Switch[@checked='true']"
         ))) {
             throw new Error("Failed to assert that bluetooth is enabled")
         }
@@ -116,21 +109,18 @@ export default class OnePlusSettingsDriver extends PhoneDriver implements ISetti
 
     @retryIfStaleElementException
     async ensureBluetoothDisabled(): Promise<void> {
-        let bluetoothIsOnText = await this.findElement(
+        let bluetoothIsOnSwitch = await this.findElement(
             'xpath',
-            "//android.widget.Switch/../../*[@text='On']"
+            "//android.widget.Switch[@checked='true']"
         );
 
-        if (bluetoothIsOnText) {
-            await this.click((await this.findElement(
-                "xpath",
-                "//android.widget.Switch"
-            ))!)
+        if (bluetoothIsOnSwitch) {
+            await this.click(bluetoothIsOnSwitch)
         }
 
         if (!(await this.findElement(
             'xpath',
-            "//android.widget.Switch/../../*[@text='Off']"
+            "//android.widget.Switch[@checked='false']"
         ))) {
             throw new Error("Failed to assert that bluetooth is disabled")
         }
