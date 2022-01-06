@@ -26,6 +26,10 @@
     "@soundboks/async-logger": "^0.1.5"
   },
   "scripts": {
-    "test-local": "yarn ts-node src/scripts/test-local"
+    "test-local": "yarn ts-node src/scripts/test-local",
+    "build": "yarn tsc",
+    "release:github": "yarn build && yarn publish --no-git-tag-version --registry=https://npm.pkg.github.com",
+    "release:npm": "yarn build && yarn publish --no-git-tag-version --access public",
+    "release": "yarn release:github && yarn release:npm"
   }
 }

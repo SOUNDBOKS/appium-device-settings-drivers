@@ -41,6 +41,7 @@ export interface ISettingsDriver {
 export enum Brand {
     LG = "LG",
     iPhone = "iPhone",
+    Huawei = "Huawei",
     Samsung = "Samsung",
     OnePlus = "OnePlus",
     Google = "Google",

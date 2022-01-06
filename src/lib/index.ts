@@ -1,4 +1,5 @@
 
+import HuaweiSettingsDriver from "./drivers/HuaweiSettingsDriver"
 import iOSSettingsDriver from "./drivers/iOSSettingsDriver"
 import LGSettingsDriver from "./drivers/LGSettingsDriver"
 import OnePlusSettingsDriver from "./drivers/OnePlusSettingsDriver"
@@ -18,6 +19,8 @@ export function createSettingsDriver(
             return new LGSettingsDriver(client)
         case Brand.OnePlus:
             return new OnePlusSettingsDriver(client)
+        case Brand.Huawei:
+            return new HuaweiSettingsDriver(client)
         default:
             throw new Error("Unsupported brand or platform version: " + brand + ":" + platformVersion + ". Double check that your brand and version are set correctly and your device is supported.")
     }
