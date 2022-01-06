@@ -96,6 +96,7 @@ export default class SamsungSettingsDriver extends PhoneDriver implements ISetti
     async activateSettings(): Promise<void> {
         await this.client.activateApp("com.android.settings")
     }
+    
     @retryIfStaleElementException
     async ensureBluetoothEnabled(): Promise<void> {
         const bluetoothIsOffSwitch = await this.findElement(

@@ -80,7 +80,7 @@ export default class LGSettingsDriver extends PhoneDriver implements ISettingsDr
     async ensureBluetoothEnabled(): Promise<void> {
         const bluetoothIsOffSwitch = await this.findElement(
             'xpath',
-            "//android.widget.Switch[@text='Off']"
+            "//android.widget.Switch[@checked='false']"
         );
 
         if (bluetoothIsOffSwitch) {
@@ -89,7 +89,7 @@ export default class LGSettingsDriver extends PhoneDriver implements ISettingsDr
 
         if (!(await this.findElement(
             'xpath',
-            "//android.widget.Switch[@text='ON']"
+            "//android.widget.Switch[@checked='true']"
         ))) {
             throw new Error("Failed to assert that bluetooth is enabled")
         }
@@ -104,7 +104,7 @@ export default class LGSettingsDriver extends PhoneDriver implements ISettingsDr
     async ensureBluetoothDisabled(): Promise<void> {
         let bluetoothIsOnSwitch = await this.findElement(
             'xpath',
-            "//android.widget.Switch[@text='ON']"
+            "//android.widget.Switch[@checked='true']"
         );
 
         if (bluetoothIsOnSwitch) {
@@ -113,7 +113,7 @@ export default class LGSettingsDriver extends PhoneDriver implements ISettingsDr
 
         if (!(await this.findElement(
             'xpath',
-            "//android.widget.Switch[@text='Off']"
+            "//android.widget.Switch[@checked='false']"
         ))) {
             throw new Error("Failed to assert that bluetooth is disabled")
         }
