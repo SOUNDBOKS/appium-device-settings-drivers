@@ -18,7 +18,7 @@ program.addOption(new Option("--brand <brand>").choices(Object.keys(Brand)).make
 program.addOption(new Option("--osVersion <version>").makeOptionMandatory())
 program.addOption(new Option("--testDevice <device>").makeOptionMandatory())
 program.addOption(new Option("--enable-datadog"))
-program.addOption(new Option("--port-offset").default(0))
+program.addOption(new Option("--port-offset <offset>").default(0))
 program.argument("<test-file>", "Path to the test")
 
 program.parse()
