@@ -30,6 +30,8 @@ export const mochaHooks = {
     async beforeAll() {
         console.log("Loading pod file: " + process.env.POD_FILE)
         pod = JSON.parse(await fs.readFile(process.env.POD_FILE!, { encoding: "utf-8" }))
+        pod.portOffset = Number(pod.portOffset)
+        
         const platformName = pod.brand === Brand.iPhone ? "iOS" : "Android";
 
         client = await WebdriverIO.remote({
