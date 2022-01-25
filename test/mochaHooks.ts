@@ -27,7 +27,8 @@ const automationName = {
 
 export const mochaHooks = {
     async beforeAll() {
-        pod = JSON.parse(await fs.readFile("output/pod.json", { encoding: "utf-8" }))
+        console.log("Loading pod file: " + process.env.POD_FILE)
+        pod = JSON.parse(await fs.readFile(process.env.POD_FILE!, { encoding: "utf-8" }))
         const platformName = pod.brand === Brand.iPhone ? "iOS" : "Android";
 
         client = await WebdriverIO.remote({

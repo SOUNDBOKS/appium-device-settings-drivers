@@ -8,6 +8,7 @@
   "devDependencies": {
     "@types/chai": "^4.3.0",
     "@types/mocha": "^9.0.0",
+    "@types/uniqid": "^5.3.2",
     "@types/webdriverio": "^5.0.0",
     "appium": "^2.0.0-beta.18",
     "chai": "^4.3.4",
@@ -25,10 +26,11 @@
     "@soundboks/again": "^0.1.2",
     "@soundboks/async-logger": "^0.1.5",
     "@types/semver": "^7.3.9",
-    "semver": "^7.3.5"
+    "semver": "^7.3.5",
+    "uniqid": "^5.4.0"
   },
   "scripts": {
-    "test-local": "yarn ts-node src/scripts/test-local",
+    "test:local": "yarn ts-node src/scripts/test-local",
     "build": "yarn tsc",
     "release:github": "yarn build && yarn publish --no-git-tag-version --registry=https://npm.pkg.github.com",
     "release:npm": "yarn build && yarn publish --no-git-tag-version --access public",

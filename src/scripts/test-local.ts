@@ -8,6 +8,7 @@ import Logger from "@soundboks/async-logger"
 import { spawn } from "child_process"
 import * as fs from "fs"
 import { promisify } from "util"
+import * as uniqid from "uniqid"
 
 const mkdir = promisify(fs.mkdir)
 
@@ -16,6 +17,7 @@ program.addOption(new Option("--deviceName <deviceName>"))
 program.addOption(new Option("--brand <brand>").choices(Object.keys(Brand)).makeOptionMandatory())
 program.addOption(new Option("--osVersion <version>").makeOptionMandatory())
 program.addOption(new Option("--testDevice <device>").makeOptionMandatory())
+program.addOption(new Option("--enable-datadog"))
 program.argument("<test-file>", "Path to the test")
 
 program.parse()
@@ -24,7 +26,10 @@ const options = program.opts()
 const main = async () => {
     await mkdir("output/", { recursive: true })
 
-    fs.writeFileSync("output/pod.json", JSON.stringify({
+    const podId = uniqid()
+    const podConfigPath = `output/pod_${podId}.json`
+    
+    fs.writeFileSync(podConfigPath, JSON.stringify({
         udid: options.udid,
         brand: options.brand,
         platformVersion: options.osVersion,
@@ -38,7 +43,10 @@ const main = async () => {
         Logger.log("Appium Server started")
 
         await new Promise(resolve => setTimeout(resolve, 3000))
-        const mochaCmd = "TS_NODE_FILES=true POD=output/pod.json yarn mocha --require ts-node/register --require test/mochaHooks.ts --spec " + program.processedArgs[0]
+        let mochaCmd = "TS_NODE_FILES=true POD_FILE=" + podConfigPath + " yarn mocha --require ts-node/register --require test/mochaHooks.ts --spec " + program.processedArgs[0]
+        if (options.enableDatadog) {
+            mochaCmd += " --register init-dd-tracer"
+        }
         const mochaExitCode = await runCommand(mochaCmd)
 
         return mochaExitCode
