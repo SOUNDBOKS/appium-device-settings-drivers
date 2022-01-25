@@ -9,7 +9,6 @@ import { spawn } from "child_process"
 import * as fs from "fs"
 import { promisify } from "util"
 import * as uniqid from "uniqid"
-import * as portastic from "portastic"
 
 const mkdir = promisify(fs.mkdir)
 
