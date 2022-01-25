@@ -9,6 +9,7 @@ import { spawn } from "child_process"
 import * as fs from "fs"
 import { promisify } from "util"
 import * as uniqid from "uniqid"
+import * as portastic from "portastic"
 
 const mkdir = promisify(fs.mkdir)
 
@@ -18,6 +19,7 @@ program.addOption(new Option("--brand <brand>").choices(Object.keys(Brand)).make
 program.addOption(new Option("--osVersion <version>").makeOptionMandatory())
 program.addOption(new Option("--testDevice <device>").makeOptionMandatory())
 program.addOption(new Option("--enable-datadog"))
+program.addOption(new Option("--port-offset").default(0))
 program.argument("<test-file>", "Path to the test")
 
 program.parse()
@@ -35,11 +37,12 @@ const main = async () => {
         platformVersion: options.osVersion,
         testDevice: options.testDevice,
         deviceName: options.deviceName,
+        portOffset: options.portOffset,
     }, undefined, 2))
     
     let appium: Appium.AppiumProcess
     try {
-        appium = Appium.startServer("output/appium.log", 7200)
+        appium = Appium.startServer("output/appium.log", 7200 + options.portOffset)
         Logger.log("Appium Server started")
 
         await new Promise(resolve => setTimeout(resolve, 3000))

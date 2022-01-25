@@ -11,6 +11,7 @@ type Pod = {
     brand: Brand,
     platformVersion: string;
     testDevice: string;
+    portOffset: number;
 }
 
 export let client: WebdriverBrowser;
@@ -34,11 +35,11 @@ export const mochaHooks = {
         client = await WebdriverIO.remote({
             logLevel: "warn",
             path: "/",
-            port: 7200,
+            port: 7200 + pod.portOffset,
             capabilities: {
                 platformName,
-                "appium:wdaLocalPort": 8000,
-                "appium:systemPort": 8000,
+                "appium:wdaLocalPort": 8000 + pod.portOffset,
+                "appium:systemPort": 8000 + pod.portOffset,
                 "appium:automationName": automationName[platformName],
                 "appium:deviceName": pod.deviceName,
                 "appium:platformVersion": pod.platformVersion,
