@@ -47,7 +47,7 @@ const main = async () => {
         await new Promise(resolve => setTimeout(resolve, 3000))
         let mochaCmd = "TS_NODE_FILES=true POD_FILE=" + podConfigPath + " yarn mocha --require ts-node/register --require test/mochaHooks.ts --spec " + program.processedArgs[0]
         if (options.enableDatadog) {
-            mochaCmd += " --register init-dd-tracer"
+            mochaCmd += " --require init-dd-tracer"
         }
         const mochaExitCode = await runCommand(mochaCmd)
 
