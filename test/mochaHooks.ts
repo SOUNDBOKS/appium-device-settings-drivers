@@ -3,6 +3,8 @@ import { createSettingsDriver } from "../src/lib"
 
 import * as WebdriverIO from "webdriverio"
 import * as fs from "fs/promises"
+import * as fsOld from "fs"
+
 import { PhoneDriver } from "../src/lib/PhoneDriver"
 
 type Pod = {
@@ -18,6 +20,9 @@ export let client: WebdriverBrowser;
 export let driver: ISettingsDriver;
 export let pod: Pod;
 
+console.log("Loading pod file: " + process.env.POD_FILE)
+pod = JSON.parse(fsOld.readFileSync(process.env.POD_FILE!, { encoding: "utf-8" }))
+
 let phoneDriver: PhoneDriver;
 
 const automationName = {
@@ -28,8 +33,6 @@ const automationName = {
 
 export const mochaHooks = {
     async beforeAll() {
-        console.log("Loading pod file: " + process.env.POD_FILE)
-        pod = JSON.parse(await fs.readFile(process.env.POD_FILE!, { encoding: "utf-8" }))
         pod.portOffset = Number(pod.portOffset)
         
         const platformName = pod.brand === Brand.iPhone ? "iOS" : "Android";
