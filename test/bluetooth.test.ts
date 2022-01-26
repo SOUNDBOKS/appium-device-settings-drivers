@@ -2,7 +2,7 @@
 import { pod, client, driver } from "./mochaHooks"
 import { expect } from "chai"
 
-describe("bluetooth", () => {
+describe(pod.deviceName + " - bluetooth connectivity & pairing", () => {
     it("should open bluetooth settings", async () => {
         await driver.activateSettings()
         await driver.navigateBluetooth()

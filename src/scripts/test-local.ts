@@ -18,7 +18,7 @@ program.addOption(new Option("--brand <brand>").choices(Object.keys(Brand)).make
 program.addOption(new Option("--osVersion <version>").makeOptionMandatory())
 program.addOption(new Option("--testDevice <device>").makeOptionMandatory())
 program.addOption(new Option("--enable-datadog"))
-program.addOption(new Option("--port-offset").default(0))
+program.addOption(new Option("--port-offset <offset>").default(0).argParser(s => Number(s)))
 program.argument("<test-file>", "Path to the test")
 
 program.parse()
@@ -47,7 +47,7 @@ const main = async () => {
         await new Promise(resolve => setTimeout(resolve, 3000))
         let mochaCmd = "TS_NODE_FILES=true POD_FILE=" + podConfigPath + " yarn mocha --require ts-node/register --require test/mochaHooks.ts --spec " + program.processedArgs[0]
         if (options.enableDatadog) {
-            mochaCmd += " --register init-dd-tracer"
+            mochaCmd += " --require init-dd-tracer"
         }
         const mochaExitCode = await runCommand(mochaCmd)
 

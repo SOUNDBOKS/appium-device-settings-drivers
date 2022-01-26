@@ -27,6 +27,7 @@
     "@soundboks/again": "^0.1.2",
     "@soundboks/async-logger": "^0.1.5",
     "@types/semver": "^7.3.9",
+    "dd-trace": "^1.7.0",
     "semver": "^7.3.5",
     "uniqid": "^5.4.0"
   },
