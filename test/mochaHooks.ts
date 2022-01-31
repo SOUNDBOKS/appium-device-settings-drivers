@@ -74,7 +74,6 @@ export const mochaHooks = {
 
         if (currentTest.isFailed()) {
             await phoneDriver.printScreen(dirName + "-failure")
-            return;
         }
 
         testNumber += 1;
