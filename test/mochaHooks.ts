@@ -6,6 +6,7 @@ import * as fs from "fs/promises"
 import * as fsOld from "fs"
 
 import { PhoneDriver } from "../src/lib/PhoneDriver"
+import slug from "slug"
 
 type Pod = {
     udid: string;
@@ -24,6 +25,7 @@ console.log("Loading pod file: " + process.env.POD_FILE)
 pod = JSON.parse(fsOld.readFileSync(process.env.POD_FILE!, { encoding: "utf-8" }))
 
 let phoneDriver: PhoneDriver;
+let testNumber = 0; // Track which test in the suite we are at - to sort the screenshots later
 
 const automationName = {
     'Android': 'UiAutomator2',
@@ -64,7 +66,23 @@ export const mochaHooks = {
     async beforeEach() {
     },
     async afterEach() {
-        await phoneDriver.printScreen()
+        const mochaContext: Mocha.Context = this as any;
+        const currentTest = mochaContext.currentTest!;
+        const dirName = currentTest.parent!.title
+
+        if (currentTest.isFailed()) {
+            await phoneDriver.printScreen(dirName + "-failure")
+            return;
+        }
+
+        testNumber += 1;
+
+        const testTitle = `${String(this.TestNumber).padStart(3, '0')} ${currentTest.title}}`
+        const fileName = slug(testTitle)        
+        const directoryPrefix =  `${dirName}/${fileName}`
+
+        await fs.mkdir(`output/screen/${dirName}`, { recursive: true })
+        await phoneDriver.printScreen(directoryPrefix)
     },
     async afterAll() {
         await phoneDriver.client.deleteSession()
