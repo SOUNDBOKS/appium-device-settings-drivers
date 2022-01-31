@@ -3,9 +3,15 @@ import { pod, client, driver } from "./mochaHooks"
 import { expect } from "chai"
 
 describe(pod.deviceName + " - bluetooth connectivity & pairing", () => {
-    it("should open bluetooth settings", async () => {
+    it("should kill any existing settings app", async () => {
         await driver.killSettings();
+    })
+
+    it("should open settings", async () => {
         await driver.activateSettings()
+    })
+
+    it("should open bluetooth settings", async () => {
         await driver.navigateBluetooth()
     })
 
