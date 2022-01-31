@@ -6,7 +6,7 @@ import * as fs from "fs/promises"
 import * as fsOld from "fs"
 
 import { PhoneDriver } from "../src/lib/PhoneDriver"
-import slug from "slug"
+import * as slug from "slug"
 
 type Pod = {
     udid: string;
