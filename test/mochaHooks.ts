@@ -79,7 +79,7 @@ export const mochaHooks = {
 
         const testTitle = `${String(this.TestNumber).padStart(3, '0')} ${currentTest.title}}`
         const fileName = slug(testTitle)        
-        const directoryPrefix =  `${dirName}/${fileName}`
+        const directoryPrefix = `${dirName}/${fileName}`
 
         await fs.mkdir(`output/screen/${dirName}`, { recursive: true })
         await phoneDriver.printScreen(directoryPrefix)
