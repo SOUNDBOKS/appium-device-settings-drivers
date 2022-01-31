@@ -4,7 +4,7 @@
   "repository": "https://github.com/SOUNDBOKS/appium-device-settings-drivers",
   "author": "oss@soundboks.com",
   "license": "MIT",
-  "main": "build/lib/index.js",
+  "main": "build/src/lib/index.js",
   "devDependencies": {
     "@types/chai": "^4.3.0",
     "@types/mocha": "^9.0.0",
