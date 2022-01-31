@@ -4,13 +4,15 @@
   "repository": "https://github.com/SOUNDBOKS/appium-device-settings-drivers",
   "author": "oss@soundboks.com",
   "license": "MIT",
-  "main": "build/lib/index.js",
+  "main": "build/src/lib/index.js",
   "devDependencies": {
     "@types/chai": "^4.3.0",
     "@types/mocha": "^9.0.0",
     "@types/node": "^17.0.12",
     "@types/uniqid": "^5.3.2",
     "@types/webdriverio": "^5.0.0",
+    "@types/semver": "^7.3.9",
+    "@types/slug": "^5.0.3",
     "appium": "^2.0.0-beta.18",
     "chai": "^4.3.4",
     "commander": "^8.3.0",
@@ -26,9 +28,9 @@
   "dependencies": {
     "@soundboks/again": "^0.1.2",
     "@soundboks/async-logger": "^0.1.5",
-    "@types/semver": "^7.3.9",
     "dd-trace": "^1.7.0",
     "semver": "^7.3.5",
+    "slug": "^5.2.0",
     "uniqid": "^5.4.0"
   },
   "scripts": {

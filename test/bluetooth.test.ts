@@ -33,4 +33,9 @@ describe(pod.deviceName + " - bluetooth connectivity & pairing", () => {
         await driver.connectDevice(pod.testDevice)
         expect(await driver.isDeviceConnected(pod.testDevice)).to.be.true
     })
+
+    it("should unpair again", async () => {
+        await driver.ensureDeviceUnpaired(pod.testDevice)
+        expect(await driver.isDeviceConnected(pod.testDevice)).to.be.false
+    })
 })
