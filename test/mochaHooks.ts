@@ -57,6 +57,8 @@ export const mochaHooks = {
                 "appium:locale": "US",
                 "appium:locationServicesEnabled": true,
                 "appium:showXcodeLog": false,
+                "appium:xcodeSigningId": "iPhone Developer",
+                "appium:xcodeOrgId": process.env.XCODE_ORG_ID
             }
         } as any)
 
