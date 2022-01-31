@@ -77,7 +77,7 @@ export const mochaHooks = {
 
         testNumber += 1;
 
-        const testTitle = `${String(this.TestNumber).padStart(3, '0')} ${currentTest.title}}`
+        const testTitle = `${String(testNumber).padStart(3, '0')} ${currentTest.title}}`
         const fileName = slug(testTitle)        
         const directoryPrefix = `${dirName}/${fileName}`
 
