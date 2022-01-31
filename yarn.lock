@@ -3380,6 +3380,11 @@ simple-swizzle@^0.2.2:
   dependencies:
     is-arrayish "^0.3.1"
 
+slug@^5.2.0:
+  version "5.2.0"
+  resolved "https://registry.yarnpkg.com/slug/-/slug-5.2.0.tgz#92f478dc01eedb6cd14def4c4cfe702409612204"
+  integrity sha512-jMCvtl7B2iF+2YUNeSo88iVy+wSGX2Jlfj6Hi7RvaQNTPiqJ8BYJAB6XaurEQiiVGN3gIj6u6IZvaG4Ang5brw==
+
 source-map-resolve@^0.6.0:
   version "0.6.0"
   resolved "https://registry.yarnpkg.com/source-map-resolve/-/source-map-resolve-0.6.0.tgz#3d9df87e236b53f16d01e58150fc7711138e5ed2"
