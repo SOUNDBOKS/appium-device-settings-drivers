@@ -54,6 +54,7 @@ export const mochaHooks = {
                 "appium:language": "en",
                 "appium:locale": "US",
                 "appium:locationServicesEnabled": true,
+                "appium:showXcodeLog": false,
             }
         } as any)
 
