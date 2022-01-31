@@ -120,7 +120,11 @@ export default class StockAndroidSettingsDriver extends PhoneDriver implements I
     }
 
     async onBluetoothPreferencesPage(fn: () => Promise<void>) {
-        await this.clickByText("Connection preferences")
+        // With enough bluetooth devices the connection preferences button can scroll out of view
+        await retryWithIntermediateStep(async () => {
+            await this.clickByText("Connection preferences")
+        }, () => this.scrollDown())
+
         await this.clickByText("Bluetooth")
 
         await fn()
