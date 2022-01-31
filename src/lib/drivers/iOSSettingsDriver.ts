@@ -50,13 +50,18 @@ export default class iOSSettingsDriver extends PhoneDriver implements ISettingsD
 
     async pairDevice(deviceLabel: string, options: PairDeviceOptions): Promise<void> {
         await retryWithIntermediateStep(async () => {
-            await retryIf(async () => this.click((await this.findByIncludesText(deviceLabel))!), isStaleElementException)
+            await retryWithIntermediateStep(async () => {
+                await retryIf(
+                    async () => this.click((await this.findByIncludesText(deviceLabel))!),
+                    isStaleElementException
+                )
+            }, async () => this.scrollDown())
             
             if (!await this.isDeviceConnected(deviceLabel)) {
                 throw new Error("Failed to assert that device is connected after pairing")
             }
         }, async () => {
-            if (await this.findByText("Pairing Unsuccesful")) {
+            if (await this.findByText("Pairing Unsuccessful")) {
                 await this.findByText("OK")
             } else {
                 throw new Error("Pairing failed for an unknown reason")

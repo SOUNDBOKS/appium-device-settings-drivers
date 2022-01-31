@@ -56,6 +56,7 @@ export default class HuaweiSettingsDriver extends PhoneDriver implements ISettin
         // Sometimes when the box was just turned on, pairing just randomly fails
         // restarting the bluetooth stack fixes this 
         if (await this.findByIncludesText("pairing mode")) {
+            console.warn("Pairing randomly failed? Trying again...")
             await this.ensureBluetoothReenabled()
             await requestPairing()
         }
@@ -83,6 +84,11 @@ export default class HuaweiSettingsDriver extends PhoneDriver implements ISettin
 
         if (!(await this.findDeviceDetailsButton(deviceLabel))) {
             throw new Error("Failed to assert that device is now paired")
+        }
+
+        if(!(await this.isDeviceConnected(deviceLabel))) {
+            console.warn("Paired, but not connected. Connecting manually")
+            await this.connectDevice(deviceLabel)
         }
     }
 

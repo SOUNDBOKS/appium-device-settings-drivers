@@ -1,4 +1,5 @@
-import { PhoneDriver, retryIfStaleElementException } from "../PhoneDriver";
+import { retryWithIntermediateStep, retryIf } from "@soundboks/again";
+import { isStaleElementException, PhoneDriver, retryIfStaleElementException } from "../PhoneDriver";
 import { ISettingsDriver, PairDeviceOptions, PairingFailure, Permission, WebdriverBrowser } from "../types";
 
 export default class LGSettingsDriver extends PhoneDriver implements ISettingsDriver {
@@ -27,8 +28,18 @@ export default class LGSettingsDriver extends PhoneDriver implements ISettingsDr
     }
 
     async pairDevice(deviceLabel: string, options?: PairDeviceOptions): Promise<void> {
-        await this.click((await this.findByIncludesText(deviceLabel))!)
-        await this.setImplicitTimeout(15000)
+        const requestPairing = async () => {
+            await retryWithIntermediateStep(async () => {
+                await retryWithIntermediateStep(async () => {
+                    await retryIf(
+                        async () => this.click((await this.findByIncludesText(deviceLabel))!),
+                        isStaleElementException
+                    )
+                }, async () => this.scrollDown())
+            }, async () => this.ensureBluetoothReenabled())
+        }
+
+        await requestPairing()
 
         await this.withPatience(15000, async () => {
             if(await this.findByText("e.g. 0000 or 1234")) {
@@ -102,6 +113,7 @@ export default class LGSettingsDriver extends PhoneDriver implements ISettingsDr
     async ensureBluetoothReenabled(): Promise<void> {
         await this.ensureBluetoothDisabled()
         await this.ensureBluetoothEnabled()
+        await (this.click((await this.findElement("xpath", '//*[@content-desc="Refresh"]'))!).catch(err => console.error("Failed to refresh bluetooth devices", err)))
     }
 
     @retryIfStaleElementException
