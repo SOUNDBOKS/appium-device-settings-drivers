@@ -23,6 +23,7 @@ export enum Permission {
 
 export interface ISettingsDriver {
     activateSettings(): Promise<void>;
+    killSettings(): Promise<void>;
     navigateBluetooth(): Promise<void>;
     ensureBluetoothEnabled(): Promise<void>;
     ensureBluetoothReenabled(): Promise<void>;

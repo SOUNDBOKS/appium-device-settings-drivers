@@ -4,6 +4,7 @@ import { expect } from "chai"
 
 describe(pod.deviceName + " - bluetooth connectivity & pairing", () => {
     it("should open bluetooth settings", async () => {
+        await driver.killSettings();
         await driver.activateSettings()
         await driver.navigateBluetooth()
     })

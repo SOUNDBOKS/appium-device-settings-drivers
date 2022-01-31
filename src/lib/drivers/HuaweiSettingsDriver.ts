@@ -114,7 +114,10 @@ export default class HuaweiSettingsDriver extends PhoneDriver implements ISettin
 
     async activateSettings(): Promise<void> {
         await this.client.activateApp("com.android.settings")
-        await this.client.resetApp()
+    }
+
+    async killSettings(): Promise<void> {
+        await this.client.terminateApp("com.android.settings")
     }
 
     @retryIfStaleElementException
