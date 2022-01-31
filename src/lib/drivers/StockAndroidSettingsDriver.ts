@@ -88,11 +88,10 @@ export default class StockAndroidSettingsDriver extends PhoneDriver implements I
         return this.findElement('xpath', `//*[contains(@text,"${label}")]/../../..//*[@content-desc="Settings"]`);
     }
 
-    @retryIfStaleElementException
     async ensureDeviceUnpaired(deviceLabel: string): Promise<void> {
         const deviceDetailsButton = await this.findDeviceDetailsButton(deviceLabel)
         if (deviceDetailsButton) {
-            await this.click(deviceDetailsButton)
+            await retryIf(async () => await this.click((await this.findDeviceDetailsButton(deviceLabel))!), isStaleElementException)
             await new Promise(resolve => setTimeout(resolve, 500))
             await this.clickByText("Forget")
             await this.clickByText("Forget device")
