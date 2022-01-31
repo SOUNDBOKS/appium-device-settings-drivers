@@ -1,4 +1,4 @@
-import { retryIf, retryUntil } from "@soundboks/again";
+import { retryIf, retryUntil, retryWithIntermediateStep } from "@soundboks/again";
 import { SemVer } from "semver";
 import { isStaleElementException, PhoneDriver, retryIfStaleElementException } from "../PhoneDriver";
 import { ISettingsDriver, PairDeviceOptions, PairingFailure, Permission, WebdriverBrowser } from "../types";
@@ -44,7 +44,14 @@ export default class SamsungSettingsDriver extends PhoneDriver implements ISetti
     }
 
     async pairDevice(deviceLabel: string, options?: PairDeviceOptions): Promise<void> {
-        await retryIf(async () => this.click((await this.findByIncludesText(deviceLabel))!), isStaleElementException)
+        await retryWithIntermediateStep(async () => {
+            await retryWithIntermediateStep(async () => {
+                await retryIf(
+                    async () => this.click((await this.findByIncludesText(deviceLabel))!),
+                    isStaleElementException
+                )
+            }, async () => this.scrollDown())
+        }, async () => this.ensureBluetoothReenabled())
 
         await this.withPatience(15000, async () => {
             if (await this.findByText("Usually 0000 or 1234")) {
@@ -96,7 +103,7 @@ export default class SamsungSettingsDriver extends PhoneDriver implements ISetti
     async activateSettings(): Promise<void> {
         await this.client.activateApp("com.android.settings")
     }
-    
+
     @retryIfStaleElementException
     async ensureBluetoothEnabled(): Promise<void> {
         const bluetoothIsOffSwitch = await this.findElement(

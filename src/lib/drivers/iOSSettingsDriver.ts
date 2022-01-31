@@ -1,4 +1,4 @@
-import { retryIf, retryUntilWithIntermediateStep } from "@soundboks/again";
+import { retryIf, retryUntilWithIntermediateStep, retryWithIntermediateStep } from "@soundboks/again";
 import { isStaleElementException, PhoneDriver, retryIfStaleElementException } from "../PhoneDriver";
 import { ISettingsDriver, PairDeviceOptions, Permission, WebdriverBrowser } from "../types";
 
@@ -23,7 +23,7 @@ export default class iOSSettingsDriver extends PhoneDriver implements ISettingsD
 
 
     async allowPermission(permission: Permission): Promise<void> {
-        switch(permission) {
+        switch (permission) {
             case Permission.Bluetooth:
                 await this.clickByA11y("OK")
                 break;
@@ -49,11 +49,20 @@ export default class iOSSettingsDriver extends PhoneDriver implements ISettingsD
     }
 
     async pairDevice(deviceLabel: string, options: PairDeviceOptions): Promise<void> {
-        await retryIf(async () => this.click((await this.findByIncludesText(deviceLabel))!), isStaleElementException)
+        await retryWithIntermediateStep(async () => {
+            await retryIf(async () => this.click((await this.findByIncludesText(deviceLabel))!), isStaleElementException)
+            
+            if (!await this.isDeviceConnected(deviceLabel)) {
+                throw new Error("Failed to assert that device is connected after pairing")
+            }
+        }, async () => {
+            if (await this.findByText("Pairing Unsuccesful")) {
+                await this.findByText("OK")
+            } else {
+                throw new Error("Pairing failed for an unknown reason")
+            }
+        })
 
-        if (!await this.isDeviceConnected(deviceLabel)) {
-            throw new Error("Failed to assert that device is connected after pairing")
-        }
     }
 
     async ensureDeviceUnpaired(deviceLabel: string): Promise<void> {

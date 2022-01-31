@@ -42,10 +42,12 @@ export default class HuaweiSettingsDriver extends PhoneDriver implements ISettin
     async pairDevice(deviceLabel: string, options?: PairDeviceOptions): Promise<void> {
         const requestPairing = async () => {
             await retryWithIntermediateStep(async () => {
-                await retryIf(
-                    async () => this.click((await this.findByIncludesText(deviceLabel))!),
-                    isStaleElementException
-                )
+                await retryWithIntermediateStep(async () => {
+                    await retryIf(
+                        async () => this.click((await this.findByIncludesText(deviceLabel))!),
+                        isStaleElementException
+                    )
+                }, async () => this.scrollDown())
             }, async () => this.ensureBluetoothReenabled())
         }
 
