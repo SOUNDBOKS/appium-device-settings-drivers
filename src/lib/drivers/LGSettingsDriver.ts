@@ -74,6 +74,7 @@ export default class LGSettingsDriver extends PhoneDriver implements ISettingsDr
 
     async activateSettings(): Promise<void> {
         await this.client.activateApp("com.android.settings")
+        await this.client.resetApp()
     }
 
     @retryIfStaleElementException

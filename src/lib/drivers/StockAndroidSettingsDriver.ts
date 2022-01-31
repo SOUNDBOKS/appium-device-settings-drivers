@@ -111,6 +111,7 @@ export default class StockAndroidSettingsDriver extends PhoneDriver implements I
 
     async activateSettings(): Promise<void> {
         await this.client.activateApp("com.android.settings")
+        await this.client.resetApp()
     }
 
     async onBluetoothPreferencesPage(fn: () => Promise<void>) {

@@ -103,6 +103,7 @@ export default class iOSSettingsDriver extends PhoneDriver implements ISettingsD
 
     async activateSettings(): Promise<void> {
         await this.client.activateApp("com.apple.Preferences")
+        await this.client.resetApp()
     }
 
     async navigateBluetooth(): Promise<void> {

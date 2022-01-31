@@ -85,6 +85,7 @@ export default class OnePlusSettingsDriver extends PhoneDriver implements ISetti
 
     async activateSettings(): Promise<void> {
         await this.client.activateApp("com.android.settings")
+        await this.client.resetApp()
     }
 
     @retryIfStaleElementException
