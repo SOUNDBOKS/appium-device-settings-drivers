@@ -40,8 +40,8 @@ export default class LGSettingsDriver extends PhoneDriver implements ISettingsDr
         }
 
         await requestPairing()
-
-        await this.withPatience(15000, async () => {
+        
+        await this.withPatience(10000, async () => {
             if(await this.findByText("e.g. 0000 or 1234")) {
                 const [pinInput] = await this.findInputs()
                 if (!(options?.pincode)) throw new Error("Device expects a pincode, but none was given")

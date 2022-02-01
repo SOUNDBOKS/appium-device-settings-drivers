@@ -26,6 +26,7 @@ pod = JSON.parse(fsOld.readFileSync(process.env.POD_FILE!, { encoding: "utf-8" }
 
 let phoneDriver: PhoneDriver;
 let testNumber = 0; // Track which test in the suite we are at - to sort the screenshots later
+let hadErrorInScreenRecording = false
 
 const automationName = {
     'Android': 'UiAutomator2',
@@ -64,6 +65,8 @@ export const mochaHooks = {
 
         driver = createSettingsDriver(client, pod.brand, pod.platformVersion)
         phoneDriver = driver as any as PhoneDriver
+
+        await phoneDriver.client.startRecordingScreen().catch(() => hadErrorInScreenRecording = true)
     },
     async beforeEach() {
     },
@@ -72,15 +75,20 @@ export const mochaHooks = {
         const currentTest = mochaContext.currentTest!;
         const dirName = currentTest.parent!.title
 
-        if (currentTest.isFailed()) {
-            await phoneDriver.printScreen(dirName + "-failure")
-        }
-
         testNumber += 1;
 
         const testTitle = `${String(testNumber).padStart(3, '0')} ${currentTest.title}}`
         const fileName = slug(testTitle)        
         const directoryPrefix = `${dirName}/${fileName}`
+
+        if (currentTest.isFailed()) {
+            await phoneDriver.printScreen(dirName + "-failure")
+            if (!hadErrorInScreenRecording) {
+                const video = await client.stopRecordingScreen()
+                await fs.writeFile('output/screen/' + fileName + ".mp4", new Uint8Array(Buffer.from(video, "base64")))
+            }
+        }
+
 
         await fs.mkdir(`output/screen/${dirName}`, { recursive: true })
         await phoneDriver.printScreen(directoryPrefix)

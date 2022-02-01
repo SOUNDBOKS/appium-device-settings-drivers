@@ -1,4 +1,4 @@
-import { retryIf, retryUntilWithIntermediateStep, retryWithIntermediateStep } from "@soundboks/again";
+import { retry, retryIf, retryUntil, retryUntilWithIntermediateStep, retryWithIntermediateStep } from "@soundboks/again";
 import { isStaleElementException, PhoneDriver, retryIfStaleElementException } from "../PhoneDriver";
 import { ISettingsDriver, PairDeviceOptions, Permission, WebdriverBrowser } from "../types";
 
@@ -45,8 +45,10 @@ export default class iOSSettingsDriver extends PhoneDriver implements ISettingsD
 
     @retryIfStaleElementException
     async connectDevice(deviceLabel: string): Promise<void> {
-        await this.click((await this.findByIncludesText(deviceLabel))!)
-        await this.wait(5000)
+        await retryUntil(async () => {
+            await this.click((await this.findByIncludesText(deviceLabel))!)
+            return this.isDeviceConnected(deviceLabel)
+        })
     }
 
     async pairDevice(deviceLabel: string, options: PairDeviceOptions): Promise<void> {
