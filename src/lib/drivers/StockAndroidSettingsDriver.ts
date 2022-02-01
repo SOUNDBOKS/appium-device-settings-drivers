@@ -78,6 +78,8 @@ export default class StockAndroidSettingsDriver extends PhoneDriver implements I
     }
 
     async isDeviceConnected(deviceLabel: string): Promise<boolean> {
+        if (!(await this.findDeviceDetailsButton(deviceLabel))) return false;
+        
         await retryIf(async () => this.click((await this.findDeviceDetailsButton(deviceLabel))!), isStaleElementException)
         const connected = Boolean(await this.findByText("Disconnect"))
         await this.navigateUp()
