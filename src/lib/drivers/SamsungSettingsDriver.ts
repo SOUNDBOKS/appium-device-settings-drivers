@@ -94,6 +94,19 @@ export default class SamsungSettingsDriver extends PhoneDriver implements ISetti
         }
     }
 
+    @retryIfStaleElementException
+    async ensureAllDevicesUnpaired(): Promise<void> {
+        while(true) {
+            let detailsButton = await this.findDeviceDetailsButton("");
+
+            if (detailsButton) {
+                await this.ensureDeviceUnpaired("")
+            } else {
+                return;
+            }
+        }
+    }
+
     async navigateBluetooth(): Promise<void> {
         await this.scrollUp();
         await this.clickByText("Connections")
@@ -103,7 +116,7 @@ export default class SamsungSettingsDriver extends PhoneDriver implements ISetti
     async activateSettings(): Promise<void> {
         await this.client.activateApp("com.android.settings")
     }
-    
+
     async killSettings(): Promise<void> {
         await this.client.terminateApp("com.android.settings")
     }

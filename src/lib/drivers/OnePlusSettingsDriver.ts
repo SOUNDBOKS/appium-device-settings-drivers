@@ -77,6 +77,20 @@ export default class OnePlusSettingsDriver extends PhoneDriver implements ISetti
         }
     }
 
+
+    @retryIfStaleElementException
+    async ensureAllDevicesUnpaired(): Promise<void> {
+        while(true) {
+            let detailsButton = await this.findDeviceDetailsButton("");
+
+            if (detailsButton) {
+                await this.ensureDeviceUnpaired("")
+            } else {
+                return;
+            }
+        }
+    }
+
     async navigateBluetooth(): Promise<void> {
         await this.scrollUp();
         await this.clickByText("Bluetooth & Device Connection")

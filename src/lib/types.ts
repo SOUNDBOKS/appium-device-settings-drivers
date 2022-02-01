@@ -29,6 +29,8 @@ export interface ISettingsDriver {
     ensureBluetoothReenabled(): Promise<void>;
     ensureBluetoothDisabled(): Promise<void>;
     ensureDeviceUnpaired(deviceLabel: string): Promise<void>;
+    ensureAllDevicesUnpaired(): Promise<void>;
+    
     pairDevice(deviceLabel: string, options?: PairDeviceOptions): Promise<void>;
     isDeviceConnected(deviceLabel: string): Promise<boolean>;
     disconnectDevice(deviceLabel: string): Promise<void>;

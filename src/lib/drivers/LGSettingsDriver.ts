@@ -78,6 +78,20 @@ export default class LGSettingsDriver extends PhoneDriver implements ISettingsDr
         }
     }
 
+
+    @retryIfStaleElementException
+    async ensureAllDevicesUnpaired(): Promise<void> {
+        while(true) {
+            let detailsButton = await this.findDeviceDetailsButton("");
+
+            if (detailsButton) {
+                await this.ensureDeviceUnpaired("")
+            } else {
+                return;
+            }
+        }
+    }
+
     async navigateBluetooth(): Promise<void> {
         await this.clickByText("Connected devices")
         await this.clickByText("Bluetooth")

@@ -98,6 +98,19 @@ export default class StockAndroidSettingsDriver extends PhoneDriver implements I
         }
     }
 
+    @retryIfStaleElementException
+    async ensureAllDevicesUnpaired(): Promise<void> {
+        while(true) {
+            let detailsButton = await this.findDeviceDetailsButton("");
+
+            if (detailsButton) {
+                await this.ensureDeviceUnpaired("")
+            } else {
+                return;
+            }
+        }
+    }
+
     async navigateBluetooth(): Promise<void> {
         await this.scrollUp();
         await this.clickByText("Connected devices")

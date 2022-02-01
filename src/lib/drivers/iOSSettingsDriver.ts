@@ -56,7 +56,7 @@ export default class iOSSettingsDriver extends PhoneDriver implements ISettingsD
                     isStaleElementException
                 )
             }, async () => this.scrollDown())
-            
+
             if (!await this.isDeviceConnected(deviceLabel)) {
                 throw new Error("Failed to assert that device is connected after pairing")
             }
@@ -92,6 +92,19 @@ export default class iOSSettingsDriver extends PhoneDriver implements ISettingsD
                 });
             }
         })
+    }
+
+    @retryIfStaleElementException
+    async ensureAllDevicesUnpaired(): Promise<void> {
+        while(true) {
+            let detailsButton = await this.findDeviceDetailsButton("");
+
+            if (detailsButton) {
+                await this.ensureDeviceUnpaired("")
+            } else {
+                return;
+            }
+        }
     }
 
     async findDeviceDetailsButton(deviceLabel: string) {

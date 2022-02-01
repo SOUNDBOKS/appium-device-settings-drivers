@@ -100,13 +100,28 @@ export default class HuaweiSettingsDriver extends PhoneDriver implements ISettin
         return this.findElement('xpath', `//*[contains(@text,"${label}")]/../../..//*[@content-desc="Details button"]`);
     }
 
-    @retryIfStaleElementException
+
     async ensureDeviceUnpaired(deviceLabel: string): Promise<void> {
         const deviceDetailsButton = await this.findDeviceDetailsButton(deviceLabel)
         if (deviceDetailsButton) {
-            await this.click(deviceDetailsButton)
+            await retryIf(async () => await this.click((await this.findDeviceDetailsButton(deviceLabel))!), isStaleElementException)
             await new Promise(resolve => setTimeout(resolve, 500))
             await this.clickByText("UNPAIR")
+        }
+    }
+
+    @retryIfStaleElementException
+    async ensureAllDevicesUnpaired(): Promise<void> {
+        while(true) {
+            let detailsButton = await this.findDeviceDetailsButton("");
+
+            if (detailsButton) {
+                await this.click(detailsButton)
+                await new Promise(resolve => setTimeout(resolve, 500))
+                await this.clickByText("UNPAIR")
+            } else {
+                return;
+            }
         }
     }
 

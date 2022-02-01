@@ -18,9 +18,9 @@ describe(pod.deviceName + " - bluetooth connectivity & pairing", () => {
     it("should re-enable bluetooth", async () => {
         await driver.ensureBluetoothReenabled()
     })
-
-    it("should ensure the test device is unpaired", async () => {
-        await driver.ensureDeviceUnpaired(pod.testDevice)
+    
+    it("should unpair from all devices", async () => {
+        await driver.ensureAllDevicesUnpaired()
     })
 
     it("should pair with the test device", async () => {
