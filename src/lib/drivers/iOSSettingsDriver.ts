@@ -59,9 +59,11 @@ export default class iOSSettingsDriver extends PhoneDriver implements ISettingsD
                 }, async () => this.scrollDown())
             }, async () => this.ensureBluetoothReenabled(), { waitTime: 5000 })
 
-            if (!await this.isDeviceConnected(deviceLabel)) {
-                throw new Error("Failed to assert that device is connected after pairing")
-            }
+            await this.withPatience(150000, async () => {
+                if (!await this.isDeviceConnected(deviceLabel)) {
+                    throw new Error("Failed to assert that device is connected after pairing")
+                }
+            })
         }, async () => {
             if (await this.findByText("Pairing Unsuccessful")) {
                 await this.findByText("OK")
