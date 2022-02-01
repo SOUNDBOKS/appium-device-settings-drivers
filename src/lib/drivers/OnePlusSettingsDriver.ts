@@ -1,4 +1,4 @@
-import { retryIf } from "@soundboks/again";
+import { retryIf, retryWithIntermediateStep } from "@soundboks/again";
 import { isStaleElementException, PhoneDriver, retryIfStaleElementException } from "../PhoneDriver";
 import { ISettingsDriver, PairDeviceOptions, PairingFailure, Permission, WebdriverBrowser } from "../types";
 
@@ -38,8 +38,19 @@ export default class OnePlusSettingsDriver extends PhoneDriver implements ISetti
     async pairDevice(deviceLabel: string, options?: PairDeviceOptions): Promise<void> {
         await this.clickByText("Pair new device")
         
-        await retryIf(async () => this.click((await this.findByIncludesText(deviceLabel))!), isStaleElementException)
+        const requestPairing = async () => {
+            await retryWithIntermediateStep(async () => {
+                await retryWithIntermediateStep(async () => {
+                    await retryIf(
+                        async () => this.click((await this.findByIncludesText(deviceLabel))!),
+                        isStaleElementException
+                    )
+                }, async () => this.scrollDown())
+            }, async () => this.ensureBluetoothReenabled(), { waitTime: 5000 })
+        }
 
+        await requestPairing()
+        
         await this.withPatience(15000, async () => {
             if(await this.findByText("Usually 0000 or 1234")) {
                 const [pinInput] = await this.findInputs()

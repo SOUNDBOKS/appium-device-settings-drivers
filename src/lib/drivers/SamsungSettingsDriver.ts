@@ -51,7 +51,7 @@ export default class SamsungSettingsDriver extends PhoneDriver implements ISetti
                     isStaleElementException
                 )
             }, async () => this.scrollDown())
-        }, async () => this.ensureBluetoothReenabled())
+        }, async () => this.ensureBluetoothReenabled(), { waitTime: 5000 })
 
         await this.withPatience(15000, async () => {
             if (await this.findByText("Usually 0000 or 1234")) {

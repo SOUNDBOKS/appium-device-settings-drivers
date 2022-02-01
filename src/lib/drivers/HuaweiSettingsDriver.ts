@@ -48,7 +48,7 @@ export default class HuaweiSettingsDriver extends PhoneDriver implements ISettin
                         isStaleElementException
                     )
                 }, async () => this.scrollDown())
-            }, async () => this.ensureBluetoothReenabled())
+            }, async () => this.ensureBluetoothReenabled(), { waitTime: 5000 })
         }
 
         await requestPairing()

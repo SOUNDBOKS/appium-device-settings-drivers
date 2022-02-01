@@ -51,11 +51,13 @@ export default class iOSSettingsDriver extends PhoneDriver implements ISettingsD
     async pairDevice(deviceLabel: string, options: PairDeviceOptions): Promise<void> {
         await retryWithIntermediateStep(async () => {
             await retryWithIntermediateStep(async () => {
-                await retryIf(
-                    async () => this.click((await this.findByIncludesText(deviceLabel))!),
-                    isStaleElementException
-                )
-            }, async () => this.scrollDown())
+                await retryWithIntermediateStep(async () => {
+                    await retryIf(
+                        async () => this.click((await this.findByIncludesText(deviceLabel))!),
+                        isStaleElementException
+                    )
+                }, async () => this.scrollDown())
+            }, async () => this.ensureBluetoothReenabled(), { waitTime: 5000 })
 
             if (!await this.isDeviceConnected(deviceLabel)) {
                 throw new Error("Failed to assert that device is connected after pairing")
@@ -96,7 +98,7 @@ export default class iOSSettingsDriver extends PhoneDriver implements ISettingsD
 
     @retryIfStaleElementException
     async ensureAllDevicesUnpaired(): Promise<void> {
-        while(true) {
+        while (true) {
             let detailsButton = await this.findDeviceDetailsButton("");
 
             if (detailsButton) {
