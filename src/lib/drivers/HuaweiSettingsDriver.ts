@@ -116,9 +116,7 @@ export default class HuaweiSettingsDriver extends PhoneDriver implements ISettin
             let detailsButton = await this.findDeviceDetailsButton("");
 
             if (detailsButton) {
-                await this.click(detailsButton)
-                await new Promise(resolve => setTimeout(resolve, 500))
-                await this.clickByText("UNPAIR")
+                await this.ensureDeviceUnpaired("")
             } else {
                 return;
             }
