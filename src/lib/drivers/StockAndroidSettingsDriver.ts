@@ -37,15 +37,18 @@ export default class StockAndroidSettingsDriver extends PhoneDriver implements I
 
     async pairDevice(deviceLabel: string, options?: PairDeviceOptions): Promise<void> {
         const requestPairing = async () => {
-            await this.clickByText("Pair new device")
             await retryWithIntermediateStep(async () => {
+                await this.clickByText("Pair new device")
                 await retryWithIntermediateStep(async () => {
                     await retryIf(
                         async () => this.click((await this.findByIncludesText(deviceLabel))!),
                         isStaleElementException
                     )
                 }, async () => this.scrollDown())
-            }, async () => this.ensureBluetoothReenabled(), { waitTime: 5000 })
+            }, async () => {
+                await this.navigateUp()
+                await this.ensureBluetoothReenabled()
+            }, { waitTime: 5000 })
         }
 
         await requestPairing()
