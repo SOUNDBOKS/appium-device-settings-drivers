@@ -46,6 +46,7 @@ export default class iOSSettingsDriver extends PhoneDriver implements ISettingsD
     @retryIfStaleElementException
     async connectDevice(deviceLabel: string): Promise<void> {
         await this.click((await this.findByIncludesText(deviceLabel))!)
+        await this.wait(5000)
     }
 
     async pairDevice(deviceLabel: string, options: PairDeviceOptions): Promise<void> {

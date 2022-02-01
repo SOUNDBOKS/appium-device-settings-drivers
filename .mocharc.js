@@ -4,5 +4,5 @@ module.exports = {
     reporter: 'mocha-multi-reporters',
     'reporter-options': 'configFile=reporter.config.json',
     slow: 2000,
-    timeout: 100000,
+    timeout: 1000 * 60 * 10,
   };
