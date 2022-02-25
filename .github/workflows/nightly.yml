@@ -1,0 +1,14 @@
+on:
+  schedule:
+    - cron: "0 0 * * *"
+jobs:
+  dispatch_e2e:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Repository Dispatch
+        uses: peter-evans/repository-dispatch@v1
+        with:
+          token: ${{ secrets.REPO_DISPATCH_TOKEN }}
+          repository: soundboks/e2e-appium-device-settings-drivers
+          event-type: trigger_e2e_for_branch
+          client-payload: '{"branch": "develop"}'
