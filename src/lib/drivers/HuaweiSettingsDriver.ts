@@ -25,7 +25,11 @@ export default class HuaweiSettingsDriver extends PhoneDriver implements ISettin
     async allowPermission(permission: Permission): Promise<void> {
         switch (permission) {
             default:
-                await this.click((await this.findElement("id", "com.android.permissioncontroller:id/permission_allow_foreground_only_button"))!)
+                if (this.platformVersion.major >= 10) {
+                    await this.click((await this.findElement("id", "com.android.permissioncontroller:id/permission_allow_foreground_only_button"))!)
+                } else {
+                    await this.click((await this.findElement("id", "com.android.packageinstaller:id/permission_allow_button"))!)
+                }
         }
     }
 
