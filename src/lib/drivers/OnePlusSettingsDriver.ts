@@ -54,8 +54,7 @@ export default class OnePlusSettingsDriver extends PhoneDriver implements ISetti
         await this.withPatience(15000, async () => {
             if(await this.findByText("Usually 0000 or 1234")) {
                 const [pinInput] = await this.findInputs()
-                if (!(options?.pincode)) throw new Error("Device expects a pincode, but none was given")
-                await this.type(pinInput, options.pincode)
+                await this.type(pinInput, options?.pincode || "0000")
                 await this.clickByText("OK")
             } else {
                 if (options?.expectPincode) throw new Error("Expected to be asked for a pincode")

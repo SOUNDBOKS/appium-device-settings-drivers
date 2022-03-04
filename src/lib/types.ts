@@ -10,7 +10,7 @@ export class PairingFailure extends Error {
 }
 
 export type PairDeviceOptions = {
-    /// Pin to use if the device requires one
+    /// Pin to use if the device requires one. If asked for a pincode and pincode is not set, will try 0000
     pincode?: string;
     /// If set, will throw if pairing does not require a pin
     expectPincode?: boolean;
