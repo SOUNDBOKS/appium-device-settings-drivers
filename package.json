@@ -1,6 +1,6 @@
 {
   "name": "@soundboks/appium-device-settings-drivers",
-  "version": "0.2.2",
+  "version": "0.2.3",
   "repository": "https://github.com/SOUNDBOKS/appium-device-settings-drivers",
   "author": "oss@soundboks.com",
   "license": "MIT",
