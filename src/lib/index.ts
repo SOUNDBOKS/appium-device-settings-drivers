@@ -23,7 +23,7 @@ export function createSettingsDriver(
         case Brand.LG:
             return new LGSettingsDriver(client)
         case Brand.OnePlus:
-            return new OnePlusSettingsDriver(client)
+            return new OnePlusSettingsDriver(client, semver)
         case Brand.Huawei:
             return new HuaweiSettingsDriver(client, semver)
         case Brand.Samsung:

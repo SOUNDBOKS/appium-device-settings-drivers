@@ -1,4 +1,5 @@
 import { retryIf, retryWithIntermediateStep } from "@soundboks/again";
+import { SemVer } from "semver";
 import { isStaleElementException, PhoneDriver, retryIfStaleElementException } from "../PhoneDriver";
 import { ISettingsDriver, PairDeviceOptions, PairingFailure, Permission, WebdriverBrowser } from "../types";
 
@@ -11,16 +12,26 @@ import { ISettingsDriver, PairDeviceOptions, PairingFailure, Permission, Webdriv
 
 export default class OnePlusSettingsDriver extends PhoneDriver implements ISettingsDriver {
     client: WebdriverBrowser
+    platformVersion: SemVer
 
-    constructor(client: WebdriverBrowser) {
+    constructor(client: WebdriverBrowser, platformVersion: SemVer) {
         super(client, "Android")
         this.client = client
+        this.platformVersion = platformVersion
     }
 
     async allowPermission(permission: Permission): Promise<void> {
         switch(permission) {
+            case Permission.Notifications:
+                if (this.platformVersion.major >= 12) {
+                    throw new Error("Unimplemented")
+                }
             default:
-                await this.click((await this.findElement("id", "com.android.permissioncontroller:id/permission_allow_foreground_only_button"))!)
+                if (this.platformVersion.major < 12) {
+                    await this.click((await this.findElement("id", "com.android.permissioncontroller:id/permission_allow_foreground_only_button"))!)
+                } else {
+                    await this.click((await this.findElement("id", "com.android.permissioncontroller:id/permission_allow_button"))!)
+                }
         }
     }
     
@@ -103,7 +114,11 @@ export default class OnePlusSettingsDriver extends PhoneDriver implements ISetti
 
     async navigateBluetooth(): Promise<void> {
         await this.scrollUp();
-        await this.clickByText("Bluetooth & Device Connection")
+        
+        // Needs more testing, but OnePlus at one point moved Bluetooth out to the top level around V12
+        if (this.platformVersion.major < 12) {
+            await this.clickByText("Bluetooth & Device Connection")
+        }
         await this.clickByText("Bluetooth")
     }
 
@@ -117,9 +132,14 @@ export default class OnePlusSettingsDriver extends PhoneDriver implements ISetti
 
     @retryIfStaleElementException
     async ensureBluetoothEnabled(): Promise<void> {
+        // OnePlus moved the on/off text on to the switch itself in version 12
+        const textSelector = (val: string) => this.platformVersion.major < 12 ?
+            `//android.widget.Switch/../../*[@text='${val}']` :
+            `//android.widget.Switch[@text='${val}']`
+
         const bluetoothIsOffText = (await this.findElement(
             'xpath',
-            "//android.widget.Switch/../../*[@text='Off']"
+            textSelector("Off"),
         ))
 
         if (bluetoothIsOffText) {
@@ -131,7 +151,7 @@ export default class OnePlusSettingsDriver extends PhoneDriver implements ISetti
 
         if (!(await this.findElement(
             'xpath',
-            "//android.widget.Switch/../../*[@text='On']"
+            textSelector("On")
         ))) {
             throw new Error("Failed to assert that bluetooth is enabled")
         }
